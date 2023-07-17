@@ -1,4 +1,4 @@
-package com.example.sample.domain;
+package com.example.sample.entity;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
@@ -11,7 +11,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-@Document
+@Document(collection = "customers")
 public class Customer {
     @Id
     private String id;
@@ -21,7 +21,7 @@ public class Customer {
     private String address;
 
     @Past
-    private Date birthday;
+    private Date birthdate;
 
     @Email
     private String email;
@@ -88,12 +88,11 @@ public class Customer {
         }
     }
 
-    public Customer(String id, @NotNull String username, String name, String address, Date birthdate, String email, @NotNull Boolean active, List<Integer> accounts, Map<String, TierAndDetails> tierAndDetailsMap) {
-        this.id = id;
+    public Customer(@NotNull String username, String name, String address, Date birthdate, String email, @NotNull boolean active, List<Integer> accounts, Map<String, TierAndDetails> tierAndDetailsMap) {
         this.username = username;
         this.name = name;
         this.address = address;
-        this.birthday = birthdate;
+        this.birthdate = birthdate;
         this.email = email;
         this.active = active;
         this.accounts = accounts;
@@ -133,11 +132,19 @@ public class Customer {
     }
 
     public Date getBirthdate() {
-        return birthday;
+        return birthdate;
     }
 
     public void setBirthdate(Date birthdate) {
-        this.birthday = birthdate;
+        this.birthdate = birthdate;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
     }
 
     public String getEmail() {

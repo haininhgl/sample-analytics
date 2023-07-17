@@ -1,71 +1,79 @@
 package com.example.sample.controller;
 
-import com.example.sample.domain.Account;
-import com.example.sample.repository.AccountRepository;
+import com.example.sample.dto.AccountDTO;
+import com.example.sample.dto.mapper.AccountMapper;
+import com.example.sample.entity.Account;
+import com.example.sample.exception.ResourceNotFoundException;
+import com.example.sample.service.AccountService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import org.springframework.data.domain.Page;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import org.springframework.data.domain.Pageable;
-import java.net.URI;
-import java.util.Optional;
+
+import java.util.List;
+
 
 @RestController
+@RequestMapping("/api")
+@Validated
 public class AccountController {
 
+    private final AccountService accountService;
+
     @Autowired
-    private AccountRepository accountRepository;
+    private final AccountMapper accountMapper;
+    public AccountController(AccountService accountService, AccountMapper accountMapper) {
+        this.accountService = accountService;
+        this.accountMapper = accountMapper;
+    }
 
     //return all accounts
     @GetMapping("/accounts")
-    public ResponseEntity<?> getAllPosts(Pageable pageable) {
-        Page<Account> accounts = accountRepository.findAll(pageable);
+    public ResponseEntity<?> getAllPost() {
+        List<Account> accounts = accountService.getAllAccount();
         return new ResponseEntity<>(accounts, HttpStatus.OK);
     }
-    //return account by id
+//    return account by id
     @GetMapping("/accounts/{id}")
-    public ResponseEntity<?> getAccountById(@PathVariable String id) {
-        Optional<Account> account = accountRepository.findById(id);
-        return new ResponseEntity<>(account, HttpStatus.OK);
+    public ResponseEntity<AccountDTO> getAccountById(@PathVariable("id") String id) {
+        try {
+            Account account = accountService.getAccountById(id);
+
+            return new ResponseEntity<>(accountMapper.toDto(account), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
-    //create a transaction
+    //create an account
     @PostMapping("/accounts")
     public ResponseEntity<?> createAccount(@RequestBody @Valid Account account) {
-        accountRepository.save(account);
+        Account newAccount = accountService.createAccount(account);
 
-        HttpHeaders responseHearders = new HttpHeaders();
-
-        URI newAccountUri = ServletUriComponentsBuilder
-                .fromCurrentRequest()
-                .path("/{id}")
-                .buildAndExpand(account.getId())
-                .toUri();
-
-        responseHearders.setLocation(newAccountUri);
-        return new ResponseEntity<>(null, responseHearders, HttpStatus.CREATED);
+        return new ResponseEntity<>(newAccount, HttpStatus.CREATED);
     }
 
-    //Update an account by id
+    //Update an account
 
     @PutMapping("/accounts/{id}")
-    public ResponseEntity<?> updateAccountById(@PathVariable String id, @RequestBody @Valid Account account) {
-        accountRepository.save(account);
-
-        return new ResponseEntity<>(HttpStatus.OK);
+    public ResponseEntity<?> updateAccount(@PathVariable String id, @RequestBody AccountDTO accountDTO) {
+        try {
+            // Gọi phương thức cập nhật thông tin tài khoản từ AccountService
+            accountService.updateAccount(id, accountDTO);
+            return new ResponseEntity<>("Account updated successfully", HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
     //Delete an account by id
 
     @DeleteMapping("/accounts/{id}")
-    public ResponseEntity<?> DeleteAccountById(@PathVariable String id, @RequestBody @Valid Account account){
-        accountRepository.deleteById(id);
-
+    public ResponseEntity<?> DeleteAccountById(@PathVariable String id, @RequestBody @Valid Account account) throws ResourceNotFoundException {
+        accountService.deleteById(id);
         return  new ResponseEntity<>((HttpStatus.OK));
     }
 }
+

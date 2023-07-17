@@ -1,16 +1,19 @@
-package com.example.sample.service.transaction;
+package com.example.sample.service;
 
 
-import com.example.sample.domain.Account;
+import com.example.sample.dto.AccountDTO;
+import com.example.sample.entity.Account;
 import com.example.sample.exception.ResourceNotFoundException;
 import com.example.sample.repository.AccountRepository;
-import org.springframework.data.domain.Page;
+import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 
 @Service
-public abstract class AccountServiceImpl implements AccountServive {
+public class AccountServiceImpl implements AccountService {
 
     private final AccountRepository accountRepository;
 
@@ -19,9 +22,10 @@ public abstract class AccountServiceImpl implements AccountServive {
     }
 
     @Override
-    public Page<Account> getAllAccount(Pageable pageable) {
-        return accountRepository.getAllAccount(pageable);
+    public List<Account> getAllAccount() {
+        return accountRepository.findAll();
     }
+
     @Override
     public Account getAccountById(String id) throws ResourceNotFoundException {
         Account account = accountRepository.findById(id).orElse(null);
@@ -38,13 +42,12 @@ public abstract class AccountServiceImpl implements AccountServive {
     }
 
     @Override
-    public Account updateAccount(Account account) throws ResourceNotFoundException {
-        Account newAccount = accountRepository.findById(account.getId()).orElse(null);
-        if (newAccount == null) {
-            throw new ResourceNotFoundException("Account not found!");
+    public void updateAccount(String id, AccountDTO accountDTO) {
+        Account account = accountRepository.findById(id).orElse(null);
+        if (account != null) {
+            BeanUtils.copyProperties(accountDTO, account);
+            accountRepository.save(account);
         }
-
-        return accountRepository.save(account);
     }
 
     @Override

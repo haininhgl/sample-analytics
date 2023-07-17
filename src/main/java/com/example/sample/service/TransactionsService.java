@@ -1,6 +1,6 @@
-package com.example.sample.service.transaction;
+package com.example.sample.service;
 
-import com.example.sample.domain.Transaction;
+import com.example.sample.entity.Transaction;
 import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.List;

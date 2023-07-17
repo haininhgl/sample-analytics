@@ -1,70 +1,65 @@
 package com.example.sample.controller;
 
-import com.example.sample.domain.Customer;
-import com.example.sample.repository.CustomerRepository;
+import com.example.sample.dto.mapper.CustomerMapper;
+import com.example.sample.entity.Customer;
+import com.example.sample.exception.ResourceNotFoundException;
+import com.example.sample.service.CustomerService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import org.springframework.data.domain.Pageable;
-import java.net.URI;
-import java.util.Optional;
+import java.util.List;
 
 @RestController
+@RequestMapping("/api")
+@Validated
 public class CustomerController {
+    private final CustomerService customerService;
+
     @Autowired
-    private CustomerRepository customerRepository;
-
-    //Return all Customer
-    @GetMapping("/customers")
-    public ResponseEntity<?> getAllCustomers(Pageable pageable) {
-        Page<Customer> customers = customerRepository.findAll(pageable);
-
-        return new ResponseEntity<>(customers, HttpStatus.OK);
+    private final CustomerMapper customerMapper;
+    public CustomerController(CustomerService customerService,CustomerMapper customerMapper) {
+        this.customerService = customerService;
+        this.customerMapper = customerMapper;
     }
-    //Return a customer by id
-    @GetMapping("/customers{id}")
-    public ResponseEntity<?> getAllCustomersById(@PathVariable String id) {
-        Optional<Customer> customer = customerRepository.findById(id);
 
+    @GetMapping("/customers")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<?> getAllPost() {
+        List<Customer> customer = customerService.getAllCustomers();
         return new ResponseEntity<>(customer, HttpStatus.OK);
     }
-    // Create a customer
+    @GetMapping("/customers/{id}")
+    @PreAuthorize("hasAuthority('ROLE_USER')")
+    public ResponseEntity<?> getCustomerById(@PathVariable("id") String id) throws ResourceNotFoundException {
+        Customer customer = customerService.getCustomerById(id);
+
+        return new ResponseEntity<>(customerMapper.toDto(customer), HttpStatus.OK);
+    }
+
     @PostMapping("/customers")
     public ResponseEntity<?> createCustomer(@RequestBody @Valid Customer customer) {
-        customerRepository.save(customer);
+        Customer newCustomer = customerService.createCustomer(customer);
 
-        HttpHeaders responseHeaders = new HttpHeaders();
-
-        URI newCustomerUri = ServletUriComponentsBuilder
-                .fromCurrentRequest()
-                .path("/{id}")
-                .buildAndExpand(customer.getId())
-                .toUri();
-
-        responseHeaders.setLocation(newCustomerUri);
-
-        return new ResponseEntity<>(null, responseHeaders, HttpStatus.CREATED);
+        return new ResponseEntity<>(newCustomer, HttpStatus.CREATED);
     }
 
-    // Update a customer by id
-    @PutMapping("/customers/{id}")
-    public ResponseEntity<?> updateCustomerById(@PathVariable String id, @RequestBody @Valid Customer customer) {
-        customerRepository.save(customer);
+    @PutMapping("/customers")
+    public ResponseEntity<?> updateCustomer(@RequestBody @Valid Customer customer) throws ResourceNotFoundException {
+        Customer newCustomer = customerService.updateCustomer(customer);
 
-        return new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity<>(newCustomer, HttpStatus.OK);
     }
 
-    //Delete a customer by id
     @DeleteMapping("/customers/{id}")
-    public ResponseEntity<?> deleteCustomerById(@PathVariable String id) {
-        customerRepository.deleteById(id);
+    public ResponseEntity<?> deleteCustomer(@PathVariable @Valid String id) throws ResourceNotFoundException {
+        customerService.deleteCustomer(id);
 
         return new ResponseEntity<>(HttpStatus.OK);
     }
+
 }

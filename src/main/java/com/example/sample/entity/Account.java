@@ -1,4 +1,4 @@
-package com.example.sample.domain;
+package com.example.sample.entity;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;

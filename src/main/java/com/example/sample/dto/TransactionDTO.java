@@ -1,2 +1,4 @@
-package com.example.sample.dto;public class TransactionDto {
+package com.example.sample.dto;
+
+public class TransactionDTO {
 }
