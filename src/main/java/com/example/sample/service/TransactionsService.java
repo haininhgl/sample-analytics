@@ -11,5 +11,9 @@ public interface TransactionsService {
 
     List<Transaction> getAll();
 
-//  Transaction deleteTransactionById(@PathVariable String id)
+    Transaction createTransaction(Transaction transaction);
+
+    Transaction deleteTransactionById(@PathVariable String id);
+
+    Transaction updateTransaction(Transaction transaction);
 }

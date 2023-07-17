@@ -99,7 +99,11 @@ public class Transaction {
             this.total = total;
         }
     }
-    public Transaction(String id, @NotNull Integer account_id, @NotNull Integer transaction_count,Date bucket_start_date, Date bucket_end_date, List<transactions> transactionsList ){
+
+    public Transaction() {
+    }
+
+    public Transaction(String id, @NotNull Integer account_id, @NotNull Integer transaction_count, Date bucket_start_date, Date bucket_end_date, List<transactions> transactionsList ){
         this.id = id;
         this.account_id = account_id;
         this.transaction_count = transaction_count;

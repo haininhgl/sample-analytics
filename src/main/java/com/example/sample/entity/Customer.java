@@ -15,7 +15,6 @@ import java.util.Map;
 public class Customer {
     @Id
     private String id;
-
     @NotNull
     private String username;
     private String name;
